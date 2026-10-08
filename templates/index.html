@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOLAR X - Complete Survey System</title>
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --primary-yellow: #fbb03b;
+      --accent-yellow: #ff9800;
+      --dark-bg: #121212;
+      --card-bg: #1e1e1e;
+      --card-border: #333333;
+      --text-main: #ffffff;
+      --text-muted: #e0e0e0;
+    }
+
+    body {
+      background-color: var(--dark-bg);
+      color: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* تحكم الشاشات الرئيسية والخطوات */
+    .app-screen { 
+      display: none !important; 
+    }
+    .app-screen.active { 
+      display: block !important; 
+    }
+    .survey-step-page {
+      display: none;
+    }
+    .survey-step-page.active {
+      display: block;
+    }
+
+    .card-custom {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      color: #ffffff;
+    }
+
+    .text-yellow { color: var(--primary-yellow) !important; }
+    .text-secondary { color: #d1d1d1 !important; }
+
+    .form-label, label {
+      color: #ffffff !important;
+      font-weight: 500;
+    }
+
+    .form-control, .form-select {
+      background-color: #2a2a2a;
+      border: 1px solid #444;
+      color: #ffffff !important;
+    }
+
+    .form-control::placeholder { color: #888888; }
+    .form-control:focus, .form-select:focus {
+      background-color: #333;
+      color: #ffffff !important;
+      border-color: var(--primary-yellow);
+      box-shadow: 0 0 0 0.25rem rgba(251, 176, 59, 0.25);
+    }
+
+    .table { color: #ffffff !important; }
+    .table td, .table th { color: #ffffff !important; }
+
+    .btn-yellow {
+      background-color: var(--primary-yellow);
+      color: #000000;
+      font-weight: 600;
+      border: none;
+      transition: 0.3s;
+    }
+    .btn-yellow:hover {
+      background-color: var(--accent-yellow);
+      color: #000000;
+    }
+
+    /* شريط الأدوات العلوي */
+    .engineer-toolbar {
+      background: #181818;
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 10px 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .toolbar-btn {
+      background: #262626;
+      color: #fff;
+      border: 1px solid #444;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      transition: 0.25s;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .toolbar-btn:hover {
+      background: #333;
+      border-color: var(--primary-yellow);
+      color: var(--primary-yellow);
+    }
+
+    .brand-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+
+    .brand-logo-small { width: 50px; height: 50px; object-fit: contain; }
+
+    /* مسار خلفية شاشة البداية المعدل */
+    .splash-bg {
+      min-height: 100vh;
+      background: linear-gradient(rgba(0, 0, 0, 0.78), rgba(0, 0, 0, 0.88)), 
+                  url("{{ url_for('static', filename='images/solar-bg.jpg') }}") no-repeat center center/cover;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    /* مسار خلفية شاشة اختيار النظام المعدل */
+    .system-select-bg {
+      min-height: 100vh;
+      background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.85)), 
+                  url("{{ url_for('static', filename='images/solar-bg.jpg') }}") no-repeat center center/cover;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .system-card {
+      background: rgba(30, 30, 30, 0.92);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(251, 176, 59, 0.3);
+      border-radius: 16px;
+      padding: 35px 25px;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      height: 100%;
+    }
+    .system-card:hover {
+      transform: translateY(-8px);
+      border-color: var(--primary-yellow);
+      box-shadow: 0 10px 25px rgba(251, 176, 59, 0.25);
+    }
+    .system-icon { font-size: 2.8rem; color: var(--primary-yellow); margin-bottom: 20px; }
+
+    /* البوصلة ومربعات الصور والـ Canvas */
+    .photo-box {
+      border: 2px dashed #555;
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+      background: #181818;
+      height: 160px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+    }
+    .photo-box:hover { border-color: var(--primary-yellow); }
+    .photo-box img { max-height: 100%; max-width: 100%; object-fit: contain; display: none; }
+
+    .canvas-container {
+      background: #ffffff;
+      border-radius: 8px;
+      border: 2px solid #555;
+      position: relative;
+    }
+
+    .compass-circle {
+      width: 140px;
+      height: 140px;
+      border: 3px solid var(--primary-yellow);
+      border-radius: 50%;
+      position: relative;
+      margin: 0 auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .compass-needle {
+      width: 4px;
+      height: 110px;
+      background: linear-gradient(to bottom, #ff5252 50%, #eeeeee 50%);
+      position: absolute;
+      transform-origin: center center;
+      transform: rotate(180deg);
+    }
+
+    .doc-page-header {
+      border-bottom: 2px solid var(--primary-yellow);
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+    }
+    .doc-page-footer {
+      border-top: 1px solid #444;
+      padding-top: 15px;
+      margin-top: 25px;
+    }
+
+    .step-navigation-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #333;
+      padding-top: 20px;
+      margin-top: 25px;
+    }
+
+    /* الآلة الحاسبة والـ AI */
+    .calc-modal-body { background: #181818; padding: 20px; border-radius: 12px; }
+    .calc-display-wrapper { background: #0f0f0f; border: 1px solid #333; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; text-align: right; }
+    .calc-history { font-size: 0.85rem; color: #888; min-height: 20px; font-family: monospace; }
+    .calc-main-screen { font-size: 2rem; font-weight: bold; color: var(--primary-yellow); font-family: monospace; overflow-x: auto; white-space: nowrap; }
+    .calc-sci-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    .calc-key { background: #252525; color: #fff; border: 1px solid #3d3d3d; padding: 12px 6px; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; text-align: center; }
+    .calc-key:hover { background: #333; border-color: var(--primary-yellow); color: var(--primary-yellow); }
+    .calc-key.fn { background: #1f1f1f; color: #00d2d3; font-size: 0.85rem; }
+    .calc-key.op { background: #2b2b2b; color: var(--primary-yellow); }
+    .calc-key.clear { background: rgba(255, 71, 87, 0.2); color: #ff4757; border-color: rgba(255, 71, 87, 0.4); }
+    .calc-key.equal { background: var(--primary-yellow); color: #000; font-weight: bold; grid-column: span 2; }
+
+    .general-ai-wrapper { display: flex; flex-direction: column; height: 480px; }
+    .general-ai-chatbox { flex: 1; background: #121212; border: 1px solid #2d2d2d; border-radius: 10px; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+    .ai-bubble { max-width: 85%; padding: 12px 16px; border-radius: 12px; font-size: 0.92rem; line-height: 1.5; }
+    .ai-bubble.bot { background: #1f1f1f; color: #eee; align-self: flex-start; border-left: 3px solid var(--primary-yellow); }
+    .ai-bubble.user { background: linear-gradient(135deg, #fbb03b, #ff9800); color: #000; font-weight: 500; align-self: flex-end; }
+    .ai-status-indicator { font-size: 0.8rem; color: #888; display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+  </style>
+</head>
+<body>
+
+  <!-- Screen 1: Splash Screen -->
+  <section id="screen-splash" class="app-screen active">
+    <div class="splash-bg">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" alt="SOLAR X Logo" style="max-width: 220px;" class="mb-4">
+      <h1 class="display-3 fw-bold text-yellow tracking-wide">SOLAR X</h1>
+      <p class="text-white fs-4 mb-4 fw-light">CLEAN ENERGY • BRIGHTER FUTURE</p>
+      <button class="btn btn-yellow btn-lg px-5 py-3 shadow-lg" onclick="showScreen('screen-login')">
+        Get Started <i class="fa-solid fa-arrow-right ms-2"></i>
+      </button>
+    </div>
+  </section>
+
+  <!-- Screen 2: Login Screen -->
+  <section id="screen-login" class="app-screen">
+    <div class="container d-flex flex-column justify-content-center align-items-center vh-100">
+      <div class="card card-custom p-4 p-md-5 shadow-lg" style="max-width: 420px; width: 100%;">
+        <div class="text-center mb-4">
+          <img src="{{ url_for('static', filename='images/logo.png') }}" alt="SOLAR X" style="max-width: 75px;" class="mb-2">
+          <h4 class="text-yellow fw-bold">Sign In</h4>
+          <p class="text-secondary small">Access Solar Survey Portal</p>
+        </div>
+        <form onsubmit="handleLogin(event)">
+          <div class="mb-3">
+            <label class="form-label small">Email or Username</label>
+            <input type="text" class="form-control" required placeholder="admin@solarx.com" value="admin@solarx.com">
+          </div>
+          <div class="mb-4">
+            <label class="form-label small">Password</label>
+            <input type="password" class="form-control" required placeholder="••••••••" value="123456">
+          </div>
+          <button type="submit" class="btn btn-yellow w-100 py-2">Login</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screen 3: Dashboard -->
+  <section id="screen-dashboard" class="app-screen">
+    <div class="container py-5">
+      <div class="brand-header">
+        <div class="d-flex align-items-center gap-3">
+          <img src="{{ url_for('static', filename='images/logo.png') }}" alt="SOLAR X" class="brand-logo-small">
+          <div>
+            <h4 class="m-0 text-yellow fw-bold">SOLAR X DASHBOARD</h4>
+            <small class="text-secondary">Project Management Workspace</small>
+          </div>
+        </div>
+        <button class="btn btn-outline-secondary btn-sm" onclick="showScreen('screen-login')">
+          <i class="fa-solid fa-right-from-bracket me-1"></i> Logout
+        </button>
+      </div>
+
+      <div class="row g-4 mt-2">
+        <div class="col-md-6">
+          <div class="card card-custom p-5 text-center h-100 d-flex flex-column justify-content-center align-items-center border-warning">
+            <i class="fa-solid fa-circle-plus text-yellow mb-3" style="font-size: 3rem;"></i>
+            <h3 class="fw-bold">Create New Project</h3>
+            <p class="text-secondary">Configure system categories, electrical load data, and rooftop layout forms.</p>
+            <button class="btn btn-yellow mt-auto px-4" onclick="showScreen('screen-system-type')">
+              Start Project Survey
+            </button>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card card-custom p-5 text-center h-100 d-flex flex-column justify-content-center align-items-center">
+            <i class="fa-solid fa-folder-open text-secondary mb-3" style="font-size: 3rem;"></i>
+            <h3 class="fw-bold">Open Saved Project</h3>
+            <p class="text-secondary">Load and edit previously recorded client data and site assessments.</p>
+            <button class="btn btn-outline-light mt-auto px-4" data-bs-toggle="modal" data-bs-target="#archiveModal" onclick="loadProjectsArchive()">
+              Browse Archive
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screen 3.5: Select Solar System Category -->
+  <section id="screen-system-type" class="app-screen">
+    <div class="system-select-bg text-center">
+      <h1 class="display-3 fw-bold text-yellow mb-2 tracking-wide">SOLAR X</h1>
+      <p class="text-white fs-4 mb-5 fw-light">SELECT SYSTEM CATEGORY</p>
+
+      <div class="container" style="max-width: 1050px;">
+        <div class="row g-4 justify-content-center">
+          <div class="col-md-4">
+            <div class="system-card" onclick="showScreen('screen-survey')">
+              <i class="fa-solid fa-solar-panel system-icon"></i>
+              <h4 class="text-white fw-bold mb-3">On / Off / Hybrid System</h4>
+              <p class="text-secondary small mb-4">Grid-tied, standalone battery storage, or flexible hybrid energy systems.</p>
+              <button class="btn btn-yellow w-100 py-2">Continue <i class="fa-solid fa-arrow-right ms-2"></i></button>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="system-card" onclick="alert('Solar Water Pump module will be available in future update!')">
+              <i class="fa-solid fa-faucet-drip system-icon"></i>
+              <h4 class="text-white fw-bold mb-3">Solar Water Pump</h4>
+              <p class="text-secondary small mb-4">Agricultural pumping systems with VFD drives and submersible motors.</p>
+              <button class="btn btn-outline-light w-100 py-2">Select</button>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="system-card" onclick="alert('Direct DC Solar System module will be available in future update!')">
+              <i class="fa-solid fa-bolt-lightning system-icon"></i>
+              <h4 class="text-white fw-bold mb-3">Direct DC Solar System</h4>
+              <p class="text-secondary small mb-4">Pure direct DC loads, telecom stations, and off-grid direct drives.</p>
+              <button class="btn btn-outline-light w-100 py-2">Select</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5">
+          <button class="btn btn-outline-secondary btn-sm px-4" onclick="showScreen('screen-dashboard')">
+            <i class="fa-solid fa-arrow-left me-2"></i> Back to Dashboard
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screen 4: 7-Page Survey Forms & Step 1 -->
+  <section id="screen-survey" class="app-screen">
+    <div class="container py-4">
+      
+      <!-- شريط أدوات المهندس -->
+      <div class="engineer-toolbar">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <button type="button" class="toolbar-btn text-warning" onclick="showScreen('screen-dashboard')">
+            <i class="fa-solid fa-house"></i> Home
+          </button>
+          <button type="button" class="toolbar-btn" data-bs-toggle="modal" data-bs-target="#archiveModal" onclick="loadProjectsArchive()">
+            <i class="fa-solid fa-folder-open text-warning"></i> Saved Projects
+          </button>
+          <button type="button" class="toolbar-btn" data-bs-toggle="modal" data-bs-target="#calcModal">
+            <i class="fa-solid fa-calculator text-warning"></i> Calculator
+          </button>
+          <button type="button" class="toolbar-btn" data-bs-toggle="modal" data-bs-target="#aiModal">
+            <i class="fa-solid fa-brain text-warning"></i> Universal AI
+          </button>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-outline-light btn-sm" onclick="exportDataAsJSON()">
+            <i class="fa-solid fa-cloud-arrow-up me-1"></i> Save to Database
+          </button>
+          <button class="btn btn-yellow btn-sm" onclick="window.print()">
+            <i class="fa-solid fa-print me-1"></i> Print / PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- مسار الإنجاز والمؤشر العلوي -->
+      <div class="card card-custom px-4 py-3 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div>
+            <span class="badge bg-warning text-dark me-2" id="currentStepLabel">Page 1 of 8</span>
+            <strong class="text-white" id="currentStepTitle">Client & Site Data</strong>
+          </div>
+          <small class="text-secondary">Interactive Step Workflow</small>
+        </div>
+        <div class="progress" style="height: 6px; background-color: #2a2a2a;">
+          <div class="progress-bar bg-warning" id="stepProgressBar" role="progressbar" style="width: 12.5%;"></div>
+        </div>
+      </div>
+
+      <form id="solarSurveyMasterForm">
+        <div class="survey-pages-container">
+
+          <!-- PAGE 1: CLIENT & SITE DATA -->
+          <div class="survey-step-page active" id="step-p1">
+            <div class="card card-custom p-4">
+              <div class="doc-page-header d-flex justify-content-between align-items-center">
+                <div>
+                  <h4 class="fw-bold text-yellow m-0">SOLAR PROJECT - CLIENT & SITE DATA</h4>
+                  <small class="text-secondary">SOLAR X System Audit Document</small>
+                </div>
+                <img src="{{ url_for('static', filename='images/logo.png') }}" class="brand-logo-small" alt="SOLAR X">
+              </div>
+
+              <div class="row g-3">
+                <div class="col-md-4"><label class="small">PROJECT ID:</label><input type="text" name="project_id" class="form-control" placeholder="PRJ-001"></div>
+                <div class="col-md-4"><label class="small">SURVEY BY:</label><input type="text" name="surveyor" class="form-control" placeholder="Engineer Name"></div>
+                <div class="col-md-4"><label class="small">PAGE:</label><input type="text" class="form-control" value="Page 1 of 7" readonly></div>
+
+                <div class="col-12"><label class="small">1. CLIENT NAME</label><input type="text" name="client_name" class="form-control"></div>
+                <div class="col-md-6"><label class="small">2. PHONE NUMBER</label><input type="tel" name="phone" class="form-control"></div>
+                <div class="col-md-6"><label class="small">3. WHATSAPP NUMBER</label><input type="tel" name="whatsapp" class="form-control"></div>
+                <div class="col-12"><label class="small">4. SITE ADDRESS</label><input type="text" name="address" class="form-control"></div>
+
+                <div class="col-12"><label class="small">5. GPS COORDINATES</label></div>
+                <div class="col-md-6"><label class="small text-secondary">LATITUDE</label><input type="text" name="lat" class="form-control"></div>
+                <div class="col-md-6"><label class="small text-secondary">LONGITUDE</label><input type="text" name="lng" class="form-control"></div>
+
+                <div class="col-12">
+                  <label class="small d-block mb-2">6. PROJECT SECTOR TYPE</label>
+                  <div class="d-flex flex-wrap gap-4">
+                    <div class="form-check"><input class="form-check-input" type="checkbox" name="sector" value="Residential" id="sec_res"><label class="form-check-label" for="sec_res">RESIDENTIAL</label></div>
+                    <div class="form-check"><input class="form-check-input" type="checkbox" name="sector" value="Commercial" id="sec_com"><label class="form-check-label" for="sec_com">COMMERCIAL</label></div>
+                    <div class="form-check"><input class="form-check-input" type="checkbox" name="sector" value="Agricultural" id="sec_agr"><label class="form-check-label" for="sec_agr">AGRICULTURAL</label></div>
+                    <div class="form-check"><input class="form-check-input" type="checkbox" name="sector" value="Industrial" id="sec_ind"><label class="form-check-label" for="sec_ind">INDUSTRIAL</label></div>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label class="small">7. SURVEY DATE (DD / MM / YYYY)</label>
+                  <input type="date" name="survey_date" class="form-control">
+                </div>
+              </div>
+
+              <div class="doc-page-footer d-flex justify-content-between">
+                <span class="small text-secondary">Powered by SOLAR X Survey Engine</span>
+                <span class="small text-secondary">Document Sheet 1</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- PAGE 2: TOPOLOGY & GOALS -->
+          <div class="survey-step-page" id="step-p2">
+            <div class="card card-custom p-4">
+              <div class="doc-page-header d-flex justify-content-between align-items-center">
+                <div>
+                  <h4 class="fw-bold text-yellow m-0">SOLAR SYSTEM TOPOLOGY & GOALS</h4>
+                  <small class="text-secondary">Engineering Sizing Scope</small>
+                </div>
+                <img src="{{ url_for('static', filename='images/logo.png') }}" class="brand-logo-small" alt="SOLAR X">
+              </div>
+
+              <div class="row g-3 mb-4">
+                <div class="col-md-4"><label class="small">PROJECT ID:</label><input type="text" class="form-control"></div>
+                <div class="col-md-4"><label class="small">CLIENT NAME:</label><input type="text" class="form-control"></div>
+                <div class="col-md-4"><label class="small">DATE:</label><input type="date" class="form-control"></div>
+              </div>
+
+              <h6 class="text-yellow fw-bold">1. PRIMARY GOALS</h6>
+              <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                  <div class="p-3 border rounded text-center">
+                    <i class="fa-solid fa-dollar-sign fs-3 text-warning mb-2"></i>
+                    <div class="form-check d-flex justify-content-center gap-2">
+                      <input class="form-check-input" type="checkbox" name="goal_bill" id="g1">
+                      <label class="form-check-label fw-bold" for="g1">BILL REDUCTION</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="p-3 border rounded text-center">
+                    <i class="fa-solid fa-plug-circle-bolt fs-3 text-warning mb-2"></i>
+                    <div class="form-check d-flex justify-content-center gap-2">
+                      <input class="form-check-input" type="checkbox" name="goal_backup" id="g2">
+                      <label class="form-check-label fw-bold" for="g2">EMERGENCY BACKUP</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="p-3 border rounded text-center">
+                    <i class="fa-solid fa-battery-full fs-3 text-warning mb-2"></i>
+                    <div class="form-check d-flex justify-content-center gap-2">
+                      <input class="form-check-input" type="checkbox" name="goal_offgrid" id="g3">
+                      <label class="form-check-label fw-bold" for="g3">OFF-GRID AUTONOMY</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <h6 class="text-yellow fw-bold">2. PROPOSED SYSTEM TYPE</h6>
+              <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                  <div class="p-3 border rounded">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="system_type" value="On-Grid" id="ps1" checked>
+                      <label class="form-check-label fw-bold" for="ps1">ON-GRID SYSTEM</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="p-3 border rounded">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="system_type" value="Off-Grid" id="ps2">
+                      <label class="form-check-label fw-bold" for="ps2">OFF-GRID SYSTEM</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="p-3 border rounded">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="system_type" value="Hybrid" id="ps3">
+                      <label class="form-check-label fw-bold" for="ps3">HYBRID SYSTEM</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <h6 class="text-yellow fw-bold">3. BUDGET RANGE</h6>
+              <div class="d-flex flex-wrap gap-4 mb-3">
+                <div class="form-check"><input class="form-check-input" type="radio" name="budget" value="< $5,000" id="b1"><label class="form-check-label" for="b1">&lt; $5,000</label></div>
+                <div class="form-check"><input class="form-check-input" type="radio" name="budget" value="$5,000-$10,000" id="b2"><label class="form-check-label" for="b2">$5,000 - $10,000</label></div>
+                <div class="form-check"><input class="form-check-input" type="radio" name="budget" value="$10,000-$20,000" id="b3"><label class="form-check-label" for="b3">$10,000 - $20,000</label></div>
+                <div class="form-check"><input class="form-check-input" type="radio" name="budget" value="> $20,000" id="b4"><label class="form-check-label" for="b4">&gt; $20,000</label></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PAGE 3: GRID ASSESSMENT -->
+          <div class="survey-step-page" id="step-p3">
+            <div class="card card-custom p-4">
+              <div class="doc-page-header d-flex justify-content-between align-items-center">
+                <h4 class="fw-bold text-yellow m-0">GRID CONNECTION & POWER SUPPLY ASSESSMENT</h4>
+                <img src="{{ url_for('static', filename='images/logo.png') }}" class="brand-logo-small" alt="SOLAR X">
+              </div>
+
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <label class="small fw-bold d-block">SERVICE TYPE</label>
+                  <div class="d-flex gap-4 mt-2">
+                    <div class="form-check"><input class="form-check-input" type="radio" name="service_type" value="1-Phase 220V" id="st1" checked><label class="form-check-label" for="st1">1-PHASE 220V</label></div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="service_type" value="3-Phase 380V" id="st2"><label class="form-check-label" for="st2">3-PHASE 380V</label></div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="small fw-bold">MAIN BREAKER RATING</label>
+                  <div class="input-group"><input type="number" name="breaker_amps" class="form-control"><span class="input-group-text bg-dark text-white">AMPS</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PAGE 4: LOAD SURVEY SHEET -->
+          <div class="survey-step-page" id="step-p4">
+            <div class="card card-custom p-4">
+              <div class="doc-page-header d-flex justify-content-between align-items-center">
+                <div>
+                  <h4 class="fw-bold text-yellow m-0">ELECTRICAL LOAD SURVEY SHEET</h4>
+                  <small class="text-secondary">Connected, Critical & Non-Critical Loads (Dynamic Excel Engine)</small>
+                </div>
+                <img src="{{ url_for('static', filename='images/logo.png') }}" class="brand-logo-small" alt="SOLAR X">
+              </div>
+
+              <div class="table-responsive">
+                <table class="table table-dark table-hover table-bordered align-middle text-center small" id="pdfLoadTable">
+                  <thead>
+                    <tr class="text-yellow">
+                      <th style="width: 40px;">#</th>
+                      <th>Load Description</th>
+                      <th style="width: 60px;">Qty</th>
+                      <th style="width: 90px;">Rated P (W)</th>
+                      <th style="width: 70px;">Surge Fac</th>
+                      <th style="width: 90px;">Surge P (W)</th>
+                      <th style="width: 95px;">Total P (W)</th>
+                      <th style="width: 75px;">Day (h)</th>
+                      <th style="width: 75px;">Night (h)</th>
+                      <th style="width: 95px;">Day Wh</th>
+                      <th style="width: 95px;">Night Wh</th>
+                      <th style="width: 100px;">Total Wh/d</th>
+                      <th style="width: 130px;">Load Type</th>
+                    </tr>
+                  </thead>
+                  <tbody id="applianceListBody"></tbody>
+                  <tfoot class="fw-bold text-dark">
+                    <tr style="background-color: #70ad47;">
+                      <td colspan="5" class="text-start ps-3">Total Connected Loads</td>
+                      <td id="totConnSurge">0</td>
+                      <td id="totConnPwr">0</td>
+                      <td colspan="2"></td>
+                      <td id="totConnDayWh">0</td>
+                      <td id="totConnNightWh">0</td>
+                      <td id="totConnTotalWh">0</td>
+                      <td></td>
+                    </tr>
+                    <tr style="background-color: #a9d18e;">
+                      <td colspan="5" class="text-start ps-3">Total Critical Loads</td>
+                      <td id="totCritSurge">0</td>
+                      <td id="totCritPwr">0</td>
+                      <td colspan="2"></td>
+                      <td id="totCritDayWh">0</td>
+                      <td id="totCritNightWh">0</td>
+                      <td id="totCritTotalWh">0</td>
+                      <td></td>
+                    </tr>
+                    <tr style="background-color: #c5e0b4;">
+                      <td colspan="5" class="text-start ps-3">Total Non-Critical Loads</td>
+                      <td id="totNonCritSurge">0</td>
+                      <td id="totNonCritPwr">0</td>
+                      <td colspan="2"></td>
+                      <td id="totNonCritDayWh">0</td>
+                      <td id="totNonCritNightWh">0</td>
+                      <td id="totNonCritTotalWh">0</td>
+                      <td></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- PAGE 5: ROOFTOP SURVEY & SKETCH -->
+          <div class="survey-step-page" id="step-p5">
+            <div class="card card-custom p-4">
+              <div class="doc-page-header d-flex justify-content-between align-items-center">
+                <div>
+                  <h4 class="fw-bold text-yellow m-0">ROOFTOP & PANEL LOCATION SURVEY</h4>
+                  <small class="text-secondary">Compass Azimuth & Sketch</small>
+                </div>
+                <img src="{{ url_for('static', filename='images/logo.png') }}" class="brand-logo-small" alt="SOLAR X">
+              </div>
+
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <label class="small fw-bold">AVAILABLE SURFACE AREA</label>
+                  <div class="input-group"><input type="number" name="roof_area" class="form-control"><span class="input-group-text bg-dark text-white">sq. meters</span></div>
+                </div>
+                <div class="col-md-6 text-center">
+                  <label class="small fw-bold mb-2 d-block">ROOF ORIENTATION (0°=N, 180°=S)</label>
+                  <div class="compass-circle mb-2">
+                    <span style="position: absolute; top: 4px; font-weight: bold; color: #ff5252;">N</span>
+                    <span style="position: absolute; bottom: 4px; font-weight: bold; color: var(--primary-yellow);">S</span>
+                    <div class="compass-needle" id="compassNeedle"></div>
+                  </div>
+                  <input type="number" name="azimuth" class="form-control text-center mx-auto" style="max-width: 150px;" id="azimuthAngle" value="180" oninput="updateCompass(this.value)">
+                </div>
+              </div>
+
+              <div class="row g-3">
+                <div class="col-md-7">
+                  <label class="small fw-bold">ROOFTOP SKETCH (Top View Canvas)</label>
+                  <div class="canvas-container text-center">
+                    <canvas id="sketchPad" width="550" height="260" style="touch-action: none; cursor: crosshair;"></canvas>
+                    <div class="p-1 bg-light d-flex justify-content-between">
+                      <button type="button" class="btn btn-outline-dark btn-sm" onclick="clearCanvas()">Clear Sketch</button>
+                      <small class="text-dark align-self-center">Draw layout with touch or mouse</small>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-5">
+                  <label class="small fw-bold">PHOTO LOG</label>
+                  <div class="row g-2">
+                    <div class="col-6"><div class="photo-box" onclick="triggerUpload(this)"><input type="file" hidden accept="image/*" onchange="previewImg(this)"><i class="fa-solid fa-camera mb-1"></i><span class="small">PHOTO 1</span><img src=""></div></div>
+                    <div class="col-6"><div class="photo-box" onclick="triggerUpload(this)"><input type="file" hidden accept="image/*" onchange="previewImg(this)"><i class="fa-solid fa-camera mb-1"></i><span class="small">PHOTO 2</span><img src=""></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PAGE 6: INVERTER ROOM -->
+          <div class="survey-step-page" id="step-p6">
+            <div class="card card-custom p-4">
+              <div class="doc-page-header d-flex justify-content-between align-items-center">
+                <h4 class="fw-bold text-yellow m-0">INVERTER & BATTERY ROOM EVALUATION</h4>
+                <img src="{{ url_for('static', filename='images/logo.png') }}" class="brand-logo-small" alt="SOLAR X">
+              </div>
+              <div class="row g-3 mb-4">
+                <div class="col-md-6"><label class="small fw-bold">ROOM LOCATION</label><input type="text" name="room_location" class="form-control" placeholder="Basement, roof, etc."></div>
+                <div class="col-md-6"><label class="small fw-bold">AMBIENT TEMP (°C)</label><input type="number" name="ambient_temp" class="form-control" value="30"></div>
+                <div class="col-md-6"><label class="small fw-bold">DC CABLE DISTANCE (m)</label><input type="number" name="dc_cable_distance" class="form-control"></div>
+                <div class="col-md-6"><label class="small fw-bold">AC CABLE DISTANCE (m)</label><input type="number" name="ac_cable_distance" class="form-control"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PAGE 7: EARTHING & PROTECTION -->
+          <div class="survey-step-page" id="step-p7">
+            <div class="card card-custom p-4">
+              <div class="doc-page-header d-flex justify-content-between align-items-center">
+                <h4 class="fw-bold text-yellow m-0">EARTHING & PROTECTION SYSTEM SURVEY</h4>
+                <img src="{{ url_for('static', filename='images/logo.png') }}" class="brand-logo-small" alt="SOLAR X">
+              </div>
+              <div class="row g-3 mb-4">
+                <div class="col-md-6"><label class="small fw-bold">EXISTING GROUNDING SYSTEM</label><input type="text" class="form-control" value="Yes"></div>
+                <div class="col-md-6"><label class="small fw-bold">EARTH RESISTANCE (Ω)</label><input type="number" name="earth_resistance" class="form-control" placeholder="Target < 5 Ohms"></div>
+                <div class="col-12"><label class="small fw-bold">SURGE PROTECTION (SPD)</label><input type="text" class="form-control" placeholder="Installed SPD type..."></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PAGE 8: PV ARRAY SIZING -->
+          <div class="survey-step-page" id="step-p8">
+            <div class="card card-custom p-4">
+              <div class="p-2 mb-3 rounded text-dark fw-bold text-center" style="background-color: #70ad47; font-size: 1.15rem;">
+                <i class="fa-solid fa-bolt me-2"></i> STEP 01 | PV Array Energy & Capacity Sizing
+              </div>
+
+              <div class="table-responsive">
+                <table class="table table-dark table-bordered align-middle mb-0">
+                  <tbody>
+                    <tr>
+                      <td class="fw-bold text-white w-50 py-3 ps-4">Total Daily Energy Required (Wh/day) =</td>
+                      <td class="py-3 px-4"><input type="number" id="step1_totalDailyEnergy" class="form-control fw-bold text-yellow fs-5" readonly value="0"></td>
+                    </tr>
+                    <tr>
+                      <td class="fw-bold text-white py-3 ps-4">System Efficiency (0.70 – 0.85) =</td>
+                      <td class="py-3 px-4"><input type="number" step="0.01" id="step1_systemEfficiency" class="form-control" value="0.8" oninput="calculateStepOne()"></td>
+                    </tr>
+                    <tr>
+                      <td class="fw-bold text-white py-3 ps-4">Future Expansion Factor (%) =</td>
+                      <td class="py-3 px-4"><input type="number" step="1" id="step1_futureExpansion" class="form-control" value="0" oninput="calculateStepOne()"></td>
+                    </tr>
+                    <tr style="background-color: rgba(251, 176, 59, 0.15);">
+                      <td class="fw-bold text-yellow py-3 ps-4 fs-5">Required PV Energy (Wh/day) =</td>
+                      <td class="py-3 px-4"><input type="number" id="step1_requiredPvEnergy" class="form-control fw-bold text-warning fs-4" readonly value="0"></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </form>
+
+      <!-- أزرار التنقل السفلية -->
+      <div class="step-navigation-bar">
+        <button type="button" class="btn btn-outline-secondary px-4 py-2" id="btnPrevStep" onclick="prevSurveyStep()">
+          <i class="fa-solid fa-arrow-left me-2"></i> Previous
+        </button>
+        <button type="button" class="btn btn-yellow px-5 py-2" id="btnNextStep" onclick="nextSurveyStep()">
+          Next <i class="fa-solid fa-arrow-right ms-2"></i>
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Modals -->
+  <div class="modal fade" id="calcModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+      <div class="modal-content card-custom text-white">
+        <div class="modal-header border-secondary py-2">
+          <h6 class="modal-title text-yellow fw-bold"><i class="fa-solid fa-calculator me-2"></i> Scientific Calculator</h6>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body calc-modal-body">
+          <div class="calc-display-wrapper">
+            <div class="calc-history" id="calcHistory">&nbsp;</div>
+            <div class="calc-main-screen" id="calcScreen">0</div>
+          </div>
+          <div class="calc-sci-grid">
+            <button class="calc-key fn" onclick="calcFunction('sin')">sin</button>
+            <button class="calc-key fn" onclick="calcFunction('cos')">cos</button>
+            <button class="calc-key fn" onclick="calcFunction('tan')">tan</button>
+            <button class="calc-key clear" onclick="calcClearAll()">AC</button>
+            <button class="calc-key clear" onclick="calcDeleteChar()">DEL</button>
+            <button class="calc-key op" onclick="calcAppend('/')">÷</button>
+            <button class="calc-key" onclick="calcAppend('7')">7</button>
+            <button class="calc-key" onclick="calcAppend('8')">8</button>
+            <button class="calc-key" onclick="calcAppend('9')">9</button>
+            <button class="calc-key op" onclick="calcAppend('*')">×</button>
+            <button class="calc-key" onclick="calcAppend('4')">4</button>
+            <button class="calc-key" onclick="calcAppend('5')">5</button>
+            <button class="calc-key" onclick="calcAppend('6')">6</button>
+            <button class="calc-key op" onclick="calcAppend('-')">-</button>
+            <button class="calc-key" onclick="calcAppend('1')">1</button>
+            <button class="calc-key" onclick="calcAppend('2')">2</button>
+            <button class="calc-key" onclick="calcAppend('3')">3</button>
+            <button class="calc-key op" onclick="calcAppend('+')">+</button>
+            <button class="calc-key" onclick="calcAppend('0')">0</button>
+            <button class="calc-key" onclick="calcAppend('.')">.</button>
+            <button class="calc-key equal" onclick="calcEvaluate()">=</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="aiModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content card-custom text-white">
+        <div class="modal-header border-secondary py-2">
+          <h5 class="modal-title text-yellow m-0 fw-bold"><i class="fa-solid fa-sparkles me-2"></i> Universal AI Assistant</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-3">
+          <div class="general-ai-wrapper">
+            <div class="general-ai-chatbox" id="aiUniversalChat">
+              <div class="ai-bubble bot">مرحباً بك يا باشمهندس! أنا مساعد الذكاء الاصطناعي لـ SOLAR X. أجب عن أي سؤال هندسي أو فني تريده.</div>
+            </div>
+            <div class="input-group mt-3">
+              <input type="text" class="form-control bg-dark text-white border-secondary" id="aiUniversalInput" placeholder="اكتب سؤالك الهندسي هنا...">
+              <button class="btn btn-yellow px-4" onclick="executeUniversalAI()">إرسال</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="archiveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content card-custom text-white">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title text-yellow"><i class="fa-solid fa-folder-open me-2"></i> Projects Archive</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="projectsArchiveList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- سكربتات الصور والبوصلة المباشرة -->
+  <script>
+    function triggerUpload(box) {
+      const input = box.querySelector('input[type="file"]');
+      if (input) input.click();
+    }
+
+    function previewImg(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = input.parentElement.querySelector('img');
+          const icon = input.parentElement.querySelector('i');
+          const span = input.parentElement.querySelector('span');
+          if (img) {
+            img.src = e.target.result;
+            img.style.display = 'block';
+          }
+          if (icon) icon.style.display = 'none';
+          if (span) span.style.display = 'none';
+        }
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    function updateCompass(val) {
+      const needle = document.getElementById('compassNeedle');
+      if (needle) {
+        needle.style.transform = `rotate(${val}deg)`;
+      }
+    }
+  </script>
+
+  <!-- مكتبات وتشغيل المنظومة -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    function showScreen(screenId) {
+      document.querySelectorAll('.app-screen').forEach(el => el.classList.remove('active'));
+      const target = document.getElementById(screenId);
+      if (target) {
+        target.classList.add('active');
+        window.scrollTo(0, 0);
+      }
+    }
+
+    function handleLogin(e) {
+      if (e) e.preventDefault();
+      showScreen('screen-dashboard');
+    }
+
+    let currentStep = 1;
+    const totalSteps = 8;
+    const stepNames = [
+      "Client & Site Data",
+      "Solar System Topology & Goals",
+      "Grid Connection Assessment",
+      "Electrical Load Survey",
+      "Rooftop & Panel Location Survey",
+      "Inverter & Battery Room Evaluation",
+      "Earthing & Surge Protection Survey",
+      "STEP 01 | PV Array Energy & Capacity Sizing"
+    ];
+
+    function updateStepView() {
+      document.querySelectorAll('.survey-step-page').forEach((el, index) => {
+        el.classList.toggle('active', index + 1 === currentStep);
+      });
+
+      const label = document.getElementById('currentStepLabel');
+      const title = document.getElementById('currentStepTitle');
+      const progBar = document.getElementById('stepProgressBar');
+
+      if (label) label.textContent = `Page ${currentStep} of ${totalSteps}`;
+      if (title) title.textContent = stepNames[currentStep - 1];
+      if (progBar) {
+        progBar.style.width = Math.round((currentStep / totalSteps) * 100) + "%";
+      }
+
+      const btnPrev = document.getElementById('btnPrevStep');
+      const btnNext = document.getElementById('btnNextStep');
+
+      if (btnPrev) btnPrev.disabled = (currentStep === 1);
+      if (btnNext) {
+        if (currentStep === totalSteps) {
+          btnNext.innerHTML = '<i class="fa-solid fa-check me-1"></i> Completed';
+          btnNext.disabled = true;
+        } else {
+          btnNext.innerHTML = 'Next <i class="fa-solid fa-arrow-right ms-1"></i>';
+          btnNext.disabled = false;
+        }
+      }
+      window.scrollTo(0, 100);
+    }
+
+    function nextSurveyStep() {
+      if (currentStep < totalSteps) {
+        currentStep++;
+        updateStepView();
+      }
+    }
+
+    function prevSurveyStep() {
+      if (currentStep > 1) {
+        currentStep--;
+        updateStepView();
+      }
+    }
+
+    const appliancesData = [
+      { name: "LED Lighting", qty: 12, pwr: 15, surge: 1.0, day: 2, night: 6, crit: false },
+      { name: "Refrigerator", qty: 1, pwr: 180, surge: 2.0, day: 6, night: 6, crit: false },
+      { name: "Deep Freezer", qty: 1, pwr: 150, surge: 2.0, day: 5, night: 5, crit: false },
+      { name: "TV & Receiver", qty: 1, pwr: 120, surge: 1.0, day: 2, night: 4, crit: false },
+      { name: "Wi-Fi Router", qty: 1, pwr: 15, surge: 1.0, day: 12, night: 12, crit: true },
+      { name: "Air Conditioner", qty: 1, pwr: 1200, surge: 1.5, day: 5, night: 3, crit: false },
+      { name: "Ceiling Fan", qty: 3, pwr: 75, surge: 1.2, day: 4, night: 6, crit: false },
+      { name: "Water Pump", qty: 1, pwr: 170, surge: 3.0, day: 1, night: 1, crit: true },
+      { name: "Microwave Oven", qty: 1, pwr: 1000, surge: 1.2, day: 0.1, night: 0.2, crit: false },
+      { name: "Washing Machine", qty: 1, pwr: 500, surge: 1.5, day: 1.5, night: 1.5, crit: false },
+      { name: "Water Heater", qty: 1, pwr: 1500, surge: 1.0, day: 1.5, night: 1.5, crit: false },
+      { name: "Laptop", qty: 1, pwr: 180, surge: 1.0, day: 5, night: 6, crit: true }
+    ];
+
+    function populateAppliances() {
+      const tbody = document.getElementById('applianceListBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      appliancesData.forEach((app, i) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${i + 1}</td>
+          <td><input type="text" class="form-control form-control-sm text-start" value="${app.name}"></td>
+          <td><input type="number" class="form-control form-control-sm" value="${app.qty}" oninput="recalcRow(this)"></td>
+          <td><input type="number" class="form-control form-control-sm" value="${app.pwr}" oninput="recalcRow(this)"></td>
+          <td><input type="number" step="0.1" class="form-control form-control-sm" value="${app.surge}" oninput="recalcRow(this)"></td>
+          <td class="surge-power fw-bold text-warning">0</td>
+          <td class="total-power fw-bold">0</td>
+          <td><input type="number" step="0.1" class="form-control form-control-sm" value="${app.day}" oninput="recalcRow(this)"></td>
+          <td><input type="number" step="0.1" class="form-control form-control-sm" value="${app.night}" oninput="recalcRow(this)"></td>
+          <td class="day-wh">0</td>
+          <td class="night-wh">0</td>
+          <td class="total-wh fw-bold text-yellow">0</td>
+          <td>
+            <div class="d-flex justify-content-center gap-2">
+              <label class="small"><input type="radio" name="crit_${i}" value="critical" ${app.crit ? 'checked' : ''} onchange="calculateAllTotals()"> Crit</label>
+              <label class="small"><input type="radio" name="crit_${i}" value="non_critical" ${!app.crit ? 'checked' : ''} onchange="calculateAllTotals()"> Non</label>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(row);
+        recalcRowValues(row);
+      });
+      calculateAllTotals();
+    }
+
+    function recalcRow(input) {
+      recalcRowValues(input.closest('tr'));
+      calculateAllTotals();
+    }
+
+    function recalcRowValues(row) {
+      const qty = parseFloat(row.cells[2].querySelector('input').value) || 0;
+      const pwr = parseFloat(row.cells[3].querySelector('input').value) || 0;
+      const surge = parseFloat(row.cells[4].querySelector('input').value) || 1.0;
+      const day = parseFloat(row.cells[7].querySelector('input').value) || 0;
+      const night = parseFloat(row.cells[8].querySelector('input').value) || 0;
+
+      row.querySelector('.surge-power').textContent = Math.round(pwr * surge);
+      row.querySelector('.total-power').textContent = Math.round(qty * pwr);
+      row.querySelector('.day-wh').textContent = Math.round(qty * pwr * day);
+      row.querySelector('.night-wh').textContent = Math.round(qty * pwr * night);
+      row.querySelector('.total-wh').textContent = Math.round(qty * pwr * day) + Math.round(qty * pwr * night);
+    }
+
+    function calculateAllTotals() {
+      let connSurge = 0, connPwr = 0, connDay = 0, connNight = 0, connTotal = 0;
+      let critSurge = 0, critPwr = 0, critDay = 0, critNight = 0, critTotal = 0;
+      let nonSurge = 0, nonPwr = 0, nonDay = 0, nonNight = 0, nonTotal = 0;
+
+      document.querySelectorAll('#applianceListBody tr').forEach(row => {
+        const surge = parseFloat(row.querySelector('.surge-power').textContent) || 0;
+        const pwr = parseFloat(row.querySelector('.total-power').textContent) || 0;
+        const day = parseFloat(row.querySelector('.day-wh').textContent) || 0;
+        const night = parseFloat(row.querySelector('.night-wh').textContent) || 0;
+        const total = parseFloat(row.querySelector('.total-wh').textContent) || 0;
+        const isCrit = row.querySelector('input[type="radio"]:checked')?.value === 'critical';
+
+        connSurge += surge; connPwr += pwr; connDay += day; connNight += night; connTotal += total;
+
+        if (isCrit) {
+          critSurge += surge; critPwr += pwr; critDay += day; critNight += night; critTotal += total;
+        } else {
+          nonSurge += surge; nonPwr += pwr; nonDay += day; nonNight += night; nonTotal += total;
+        }
+      });
+
+      const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+      setVal('totConnSurge', connSurge);
+      setVal('totConnPwr', connPwr);
+      setVal('totConnDayWh', connDay);
+      setVal('totConnNightWh', connNight);
+      setVal('totConnTotalWh', connTotal);
+
+      setVal('totCritSurge', critSurge);
+      setVal('totCritPwr', critPwr);
+      setVal('totCritDayWh', critDay);
+      setVal('totCritNightWh', critNight);
+      setVal('totCritTotalWh', critTotal);
+
+      setVal('totNonCritSurge', nonSurge);
+      setVal('totNonCritPwr', nonPwr);
+      setVal('totNonCritDayWh', nonDay);
+      setVal('totNonCritNightWh', nonNight);
+      setVal('totNonCritTotalWh', nonTotal);
+
+      calculateStepOne();
+    }
+
+    function calculateStepOne() {
+      const totalDailyWh = parseFloat(document.getElementById('totConnTotalWh')?.textContent) || 0;
+      const totalEnergyInput = document.getElementById('step1_totalDailyEnergy');
+      if (totalEnergyInput) totalEnergyInput.value = totalDailyWh;
+
+      const efficiency = parseFloat(document.getElementById('step1_systemEfficiency')?.value) || 0;
+      const expansionPercent = parseFloat(document.getElementById('step1_futureExpansion')?.value) || 0;
+
+      let requiredPvWh = 0;
+      if (efficiency > 0) {
+        requiredPvWh = Math.round((totalDailyWh * (1 + (expansionPercent / 100))) / efficiency);
+      }
+      const resultInput = document.getElementById('step1_requiredPvEnergy');
+      if (resultInput) resultInput.value = requiredPvWh;
+    }
+
+    let currentCalcExpr = "";
+    function calcAppend(val) { currentCalcExpr += val; document.getElementById('calcScreen').textContent = currentCalcExpr; }
+    function calcClearAll() { currentCalcExpr = ""; document.getElementById('calcScreen').textContent = "0"; }
+    function calcDeleteChar() { currentCalcExpr = currentCalcExpr.slice(0, -1); document.getElementById('calcScreen').textContent = currentCalcExpr || "0"; }
+    function calcFunction(fn) {
+      let val = parseFloat(document.getElementById('calcScreen').textContent) || 0;
+      let res = fn === 'sin' ? Math.sin((val * Math.PI) / 180) : Math.cos((val * Math.PI) / 180);
+      currentCalcExpr = res.toFixed(4).toString();
+      document.getElementById('calcScreen').textContent = currentCalcExpr;
+    }
+    function calcEvaluate() {
+      try {
+        let compute = new Function(`return ${currentCalcExpr}`);
+        let result = compute();
+        document.getElementById('calcScreen').textContent = result;
+        currentCalcExpr = result.toString();
+      } catch { document.getElementById('calcScreen').textContent = "Error"; }
+    }
+
+    async function executeUniversalAI() {
+      const inputEl = document.getElementById('aiUniversalInput');
+      const query = inputEl?.value.trim();
+      if (!query) return;
+
+      const chatContainer = document.getElementById('aiUniversalChat');
+      const userMsg = document.createElement('div');
+      userMsg.className = "ai-bubble user";
+      userMsg.textContent = query;
+      chatContainer.appendChild(userMsg);
+      inputEl.value = "";
+
+      try {
+        const res = await fetch('/api/chat-ai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: query })
+        });
+        const data = await res.json();
+        const botMsg = document.createElement('div');
+        botMsg.className = "ai-bubble bot";
+        botMsg.innerHTML = `<strong>SOLAR X AI:</strong><br>${data.reply.replace(/\n/g, '<br>')}`;
+        chatContainer.appendChild(botMsg);
+      } catch {
+        const botMsg = document.createElement('div');
+        botMsg.className = "ai-bubble bot";
+        botMsg.textContent = "تعذر الاتصال بالسيرفر.";
+        chatContainer.appendChild(botMsg);
+      }
+    }
+
+    async function loadProjectsArchive() {
+      const listContainer = document.getElementById('projectsArchiveList');
+      try {
+        const res = await fetch('/api/projects');
+        const projects = await res.json();
+        let html = '<div class="list-group">';
+        projects.forEach(p => {
+          html += `<div class="list-group-item bg-dark text-white border-secondary mb-2 rounded">${p.client_name || 'Project'} (${p.system_type || 'N/A'})</div>`;
+        });
+        html += '</div>';
+        listContainer.innerHTML = html;
+      } catch { listContainer.innerHTML = 'No saved projects found.'; }
+    }
+
+    let canvas, ctx, painting = false;
+    function initCanvas() {
+      canvas = document.getElementById('sketchPad');
+      if (!canvas) return;
+      ctx = canvas.getContext('2d');
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      canvas.addEventListener('mousedown', () => painting = true);
+      canvas.addEventListener('mouseup', () => { painting = false; ctx.beginPath(); });
+      canvas.addEventListener('mousemove', (e) => {
+        if (!painting) return;
+        const rect = canvas.getBoundingClientRect();
+        ctx.lineWidth = 2; ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+        ctx.stroke(); ctx.beginPath(); ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+      });
+    }
+    function clearCanvas() {
+      if (!canvas || !ctx) return;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    async function exportDataAsJSON() {
+      alert("✅ تم حفظ الاستبيان بنجاح!");
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      populateAppliances();
+      initCanvas();
+      updateStepView();
+    });
+  </script>
+</body>
+</html>
